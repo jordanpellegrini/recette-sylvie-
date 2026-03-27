@@ -446,7 +446,7 @@ body {
 .btn-comment:hover:not(:disabled) { background: var(--brown-light); color: white; border-color: var(--brown-light); }
 .btn-comment:disabled { opacity: 0.4; cursor: not-allowed; }
 
-
+.card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
