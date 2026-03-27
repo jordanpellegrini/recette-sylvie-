@@ -5,7 +5,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// ─── Recipes ────────────────────────────────────────────────────────────────
+// ─── Recipes ─────────────────────────────────────────────────────────────────
 
 export async function getRecipes(category = null) {
   let query = supabase
@@ -36,14 +36,31 @@ export async function deleteRecipe(id) {
   if (error) throw error
 }
 
-export async function updateRecipe(id, updates) {
+// ─── Comments ─────────────────────────────────────────────────────────────────
+
+export async function getComments(recipeId) {
   const { data, error } = await supabase
-    .from('recipes')
-    .update(updates)
-    .eq('id', id)
+    .from('comments')
+    .select('*')
+    .eq('recipe_id', recipeId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return data
+}
+
+export async function addComment(recipeId, content) {
+  const { data, error } = await supabase
+    .from('comments')
+    .insert([{ recipe_id: recipeId, content }])
     .select()
     .single()
 
   if (error) throw error
   return data
+}
+
+export async function deleteComment(id) {
+  const { error } = await supabase.from('comments').delete().eq('id', id)
+  if (error) throw error
 }
