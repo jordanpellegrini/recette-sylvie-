@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { getRecipes } from './lib/supabase'
 import RecipeCard from './components/RecipeCard'
 import ImportModal from './components/ImportModal'
+import WelcomePopup from './components/WelcomePopup'
 import './App.css'
 
 export default function App() {
@@ -129,6 +130,9 @@ export default function App() {
       <footer className="site-footer">
         <p>Fait avec ❤️ par Sylvie · {new Date().getFullYear()}</p>
       </footer>
+
+      {/* ── Welcome Popup ──────────────────────────────────── */}
+      <WelcomePopup />
 
       {/* ── Modal ──────────────────────────────────────────── */}
       {showImport && (

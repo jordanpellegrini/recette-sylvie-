@@ -558,6 +558,222 @@ body {
 .success-screen h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--green); margin-bottom: 0.5rem; }
 .success-screen p { color: var(--text-light); margin-bottom: 1.5rem; }
 
+/* ── Mode Switcher ──────────────────────────────────────── */
+.mode-switcher {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  background: var(--cream-dark);
+  border-radius: 10px;
+  padding: 0.3rem;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-light);
+  font-family: 'Lato', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  background: white;
+  color: var(--brown-dark);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+/* ── Drop Zone ──────────────────────────────────────────── */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+  margin-top: 0.4rem;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drop-zone:hover { border-color: var(--brown-light); background: var(--cream); }
+
+.drop-zone.has-image {
+  padding: 0.5rem;
+  border-style: solid;
+  border-color: var(--brown-light);
+}
+
+.drop-placeholder { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+.drop-icon { font-size: 2rem; }
+.drop-placeholder p { color: var(--text-light); font-size: 0.88rem; margin: 0; }
+.drop-hint { font-size: 0.75rem !important; color: #bca890 !important; }
+
+.drop-preview {
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.btn-change-image {
+  background: none;
+  border: none;
+  color: var(--brown-light);
+  font-size: 0.82rem;
+  cursor: pointer;
+  margin-top: 0.4rem;
+  font-family: 'Lato', sans-serif;
+  text-decoration: underline;
+}
+
+.btn-change-image:hover { color: var(--brown); }
+
+/* ── Welcome Popup ──────────────────────────────────────── */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(60, 35, 20, 0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.welcome-overlay.closing {
+  animation: fadeOut 0.5s ease forwards;
+}
+
+.welcome-box {
+  background: linear-gradient(160deg, #fffaf4 0%, #fdf0dc 100%);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(60, 35, 20, 0.4);
+  animation: popIn 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-box::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: -40px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(200,149,108,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.welcome-box.closing {
+  animation: popOut 0.5s ease forwards;
+}
+
+.welcome-flowers {
+  font-size: 1.4rem;
+  margin: 0.5rem 0;
+  animation: sway 3s ease-in-out infinite;
+}
+
+.welcome-emoji {
+  font-size: 3.5rem;
+  margin: 0.5rem 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.welcome-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin: 0.5rem 0 0;
+  animation: slideUp 0.8s 0.3s ease both;
+}
+
+.welcome-subtitle {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--brown-light);
+  margin: 0.2rem 0 1rem;
+  animation: slideUp 0.8s 0.5s ease both;
+}
+
+.welcome-divider {
+  color: var(--brown-light);
+  font-size: 0.7rem;
+  letter-spacing: 0.5rem;
+  margin: 0.75rem 0;
+  animation: slideUp 0.8s 0.6s ease both;
+}
+
+.welcome-message {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  animation: slideUp 0.8s 0.7s ease both;
+}
+
+.welcome-btn {
+  background: linear-gradient(135deg, var(--brown) 0%, var(--brown-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 0.85rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(91, 52, 30, 0.3);
+  animation: slideUp 0.8s 0.8s ease both;
+  margin-bottom: 1rem;
+}
+
+.welcome-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(91, 52, 30, 0.4);
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeOut { from { opacity: 1 } to { opacity: 0 } }
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.7) translateY(30px) }
+  to   { opacity: 1; transform: scale(1) translateY(0) }
+}
+@keyframes popOut {
+  from { opacity: 1; transform: scale(1) }
+  to   { opacity: 0; transform: scale(0.8) translateY(20px) }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(-5deg) }
+  50% { transform: rotate(5deg) }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1) }
+  50% { transform: scale(1.1) }
+}
+
 /* ── Footer ─────────────────────────────────────────────── */
 .site-footer {
   text-align: center;
