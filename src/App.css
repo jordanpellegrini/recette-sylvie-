@@ -488,7 +488,7 @@ body {
 
 .btn-secondary:hover { background: var(--cream-dark); }
 
-
+.btn-delete {
   background: transparent;
   color: #999;
   border: 1.5px solid #e0d0c8;
