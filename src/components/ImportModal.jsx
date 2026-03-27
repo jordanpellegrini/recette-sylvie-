@@ -1,53 +1,74 @@
 import { useState, useRef } from 'react'
-import { extractRecipeFromText, extractRecipeFromImage } from '../lib/claude'
+import { extractRecipeFromImages, extractRecipeFromText } from '../lib/claude'
 import { addRecipe } from '../lib/supabase'
 
 export default function ImportModal({ onClose, onImported }) {
   const [step, setStep] = useState(1)
-  const [mode, setMode] = useState('image') // 'image' ou 'text'
+  const [mode, setMode] = useState('image')
   const [instagramUrl, setInstagramUrl] = useState('')
-  const [title, setTitle] = useState('')
   const [rawText, setRawText] = useState('')
-  const [imagePreview, setImagePreview] = useState(null)
-  const [imageBase64, setImageBase64] = useState(null)
-  const [imageMediaType, setImageMediaType] = useState(null)
+  const [images, setImages] = useState([])
   const [recipe, setRecipe] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const fileInputRef = useRef(null)
 
-  function handleImageChange(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    setImageMediaType(file.type)
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const dataUrl = ev.target.result
-      setImagePreview(dataUrl)
-      setImageBase64(dataUrl.split(',')[1])
-    }
-    reader.readAsDataURL(file)
+  function processFiles(files) {
+    const remaining = 10 - images.length
+    const toProcess = Array.from(files).slice(0, remaining)
+    toProcess.forEach((file) => {
+      if (!file.type.startsWith('image/')) return
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result
+        setImages((prev) => [
+          ...prev,
+          { preview: dataUrl, base64: dataUrl.split(',')[1], mediaType: file.type },
+        ])
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  function handleFileChange(e) {
+    processFiles(e.target.files)
+    e.target.value = ''
   }
 
   function handleDrop(e) {
     e.preventDefault()
-    const file = e.dataTransfer.files[0]
-    if (file && file.type.startsWith('image/')) {
-      handleImageChange({ target: { files: [file] } })
-    }
+    processFiles(e.dataTransfer.files)
+  }
+
+  function removeImage(index) {
+    setImages((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function moveImage(from, to) {
+    setImages((prev) => {
+      const arr = [...prev]
+      const [item] = arr.splice(from, 1)
+      arr.splice(to, 0, item)
+      return arr
+    })
   }
 
   async function handleImport() {
-    if (!title.trim()) { setError('Veuillez entrer un titre.'); return }
-    if (mode === 'image' && !imageBase64) { setError("Veuillez uploader une capture d'écran."); return }
-    if (mode === 'text' && !rawText.trim()) { setError('Veuillez coller la description Instagram.'); return }
+    if (mode === 'image' && images.length === 0) {
+      setError('Veuillez uploader au moins une photo.')
+      return
+    }
+    if (mode === 'text' && !rawText.trim()) {
+      setError('Veuillez coller la description Instagram.')
+      return
+    }
 
     setError('')
     setLoading(true)
     try {
       const extracted = mode === 'image'
-        ? await extractRecipeFromImage({ title, instagramUrl, imageBase64, mediaType: imageMediaType })
-        : await extractRecipeFromText({ title, instagramUrl, rawText })
+        ? await extractRecipeFromImages({ instagramUrl, images })
+        : await extractRecipeFromText({ instagramUrl, rawText })
       setRecipe(extracted)
       setStep(2)
     } catch (e) {
@@ -79,25 +100,17 @@ export default function ImportModal({ onClose, onImported }) {
           <>
             <h2 className="modal-title">📥 Importer depuis Instagram</h2>
             <p className="modal-subtitle">
-              Prends une capture d'écran de la recette sur Instagram — Claude lit tout automatiquement !
+              Uploade jusqu'à <strong>10 captures d'écran</strong> — Claude trouve le titre et reconstruit la recette automatiquement !
             </p>
 
             <div className="mode-switcher">
               <button className={`mode-btn ${mode === 'image' ? 'active' : ''}`} onClick={() => setMode('image')}>
-                📸 Capture d'écran
+                📸 Photos / Captures
               </button>
               <button className={`mode-btn ${mode === 'text' ? 'active' : ''}`} onClick={() => setMode('text')}>
                 📝 Texte
               </button>
             </div>
-
-            <label className="field-label">Titre de la recette *</label>
-            <input
-              className="field-input"
-              placeholder="Ex : Tarte aux pommes de mamie"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
 
             <label className="field-label">Lien Instagram (optionnel)</label>
             <input
@@ -109,34 +122,65 @@ export default function ImportModal({ onClose, onImported }) {
 
             {mode === 'image' && (
               <>
-                <label className="field-label">Capture d'écran Instagram *</label>
-                <div
-                  className={`drop-zone ${imagePreview ? 'has-image' : ''}`}
-                  onClick={() => fileInputRef.current.click()}
-                  onDrop={handleDrop}
-                  onDragOver={(e) => e.preventDefault()}
-                >
-                  {imagePreview ? (
-                    <img src={imagePreview} alt="Aperçu" className="drop-preview" />
-                  ) : (
+                <label className="field-label">
+                  Photos / Captures d'écran *
+                  <span className="image-counter">{images.length}/10</span>
+                </label>
+
+                {images.length < 10 && (
+                  <div
+                    className="drop-zone"
+                    onClick={() => fileInputRef.current.click()}
+                    onDrop={handleDrop}
+                    onDragOver={(e) => e.preventDefault()}
+                  >
                     <div className="drop-placeholder">
                       <span className="drop-icon">📷</span>
-                      <p>Clique ou glisse ta capture d'écran ici</p>
-                      <p className="drop-hint">PNG, JPG, WEBP acceptés</p>
+                      <p>Clique ou glisse tes photos ici</p>
+                      <p className="drop-hint">
+                        {images.length === 0
+                          ? "Jusqu'à 10 photos — PNG, JPG, WEBP"
+                          : `${10 - images.length} photo(s) supplémentaire(s) possible(s)`}
+                      </p>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  multiple
                   style={{ display: 'none' }}
-                  onChange={handleImageChange}
+                  onChange={handleFileChange}
                 />
-                {imagePreview && (
-                  <button className="btn-change-image" onClick={() => { setImagePreview(null); setImageBase64(null) }}>
-                    🔄 Changer l'image
-                  </button>
+
+                {images.length > 0 && (
+                  <div className="images-grid">
+                    {images.map((img, i) => (
+                      <div key={i} className="image-thumb">
+                        <img src={img.preview} alt={`Photo ${i + 1}`} />
+                        <div className="image-thumb-overlay">
+                          <span className="image-thumb-num">{i + 1}</span>
+                          <div className="image-thumb-actions">
+                            {i > 0 && (
+                              <button onClick={() => moveImage(i, i - 1)} title="Monter">◀</button>
+                            )}
+                            {i < images.length - 1 && (
+                              <button onClick={() => moveImage(i, i + 1)} title="Descendre">▶</button>
+                            )}
+                            <button className="remove-btn" onClick={() => removeImage(i)} title="Supprimer">✕</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {images.length < 10 && (
+                      <div className="image-add-btn" onClick={() => fileInputRef.current.click()}>
+                        <span>+</span>
+                        <p>Ajouter</p>
+                      </div>
+                    )}
+                  </div>
                 )}
               </>
             )}
@@ -160,7 +204,9 @@ export default function ImportModal({ onClose, onImported }) {
             <div className="modal-actions">
               <button className="btn-secondary" onClick={onClose}>Annuler</button>
               <button className="btn-primary" onClick={handleImport} disabled={loading}>
-                {loading ? '⏳ Claude analyse...' : '✨ Importer & Reformater'}
+                {loading
+                  ? `⏳ Claude analyse${images.length > 1 ? ` ${images.length} photos` : ''}...`
+                  : '✨ Importer & Reformater'}
               </button>
             </div>
           </>
