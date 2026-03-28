@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { deleteRecipe, getComments, addComment, deleteComment, addNotification } from '../lib/supabase'
 
+function normalize(str) {
+  return (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+}
+
 export default function RecipeCard({ recipe, onDeleted, user }) {
   const [expanded, setExpanded] = useState(false)
   const [showComments, setShowComments] = useState(false)
@@ -9,6 +13,9 @@ export default function RecipeCard({ recipe, onDeleted, user }) {
   const [loadingComments, setLoadingComments] = useState(false)
   const [savingComment, setSavingComment] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  // L'utilisateur est propriétaire si c'est lui qui a créé (comparaison normalisée)
+  const isOwner = !recipe.created_by || normalize(recipe.created_by) === normalize(user.fullName)
 
   useEffect(() => {
     if (showComments) loadComments()
@@ -102,9 +109,13 @@ export default function RecipeCard({ recipe, onDeleted, user }) {
             </div>
           </div>
 
-          {recipe.tips && <div className="tips-box"><h4>💡 Conseils de Sylvie</h4><p>{recipe.tips}</p></div>}
+          {recipe.tips && (
+            <div className="tips-box">
+              <h4>💡 Conseils de Sylvie</h4>
+              <p>{recipe.tips}</p>
+            </div>
+          )}
 
-          {/* Commentaires */}
           <div className="comments-section">
             <button className="comments-toggle" onClick={() => setShowComments(!showComments)}>
               💬 Commentaires
@@ -124,7 +135,8 @@ export default function RecipeCard({ recipe, onDeleted, user }) {
                       <span className="comment-date">{new Date(c.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     <p className="comment-text">{c.content}</p>
-                    {c.author === user.fullName && (
+                    {/* Supprimer seulement ses propres commentaires */}
+                    {normalize(c.author) === normalize(user.fullName) && (
                       <button className="comment-delete" onClick={() => handleDeleteComment(c.id)}>✕</button>
                     )}
                   </div>
@@ -149,7 +161,12 @@ export default function RecipeCard({ recipe, onDeleted, user }) {
 
           <div className="card-footer">
             <button className="btn-print" onClick={handlePrint}>🖨️ Imprimer</button>
-            <button className="btn-delete" onClick={handleDelete} disabled={deleting}>{deleting ? '...' : '🗑 Supprimer'}</button>
+            {/* Supprimer seulement ses propres recettes */}
+            {isOwner && (
+              <button className="btn-delete" onClick={handleDelete} disabled={deleting}>
+                {deleting ? '...' : '🗑 Supprimer'}
+              </button>
+            )}
           </div>
         </div>
       )}
