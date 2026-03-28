@@ -116,3 +116,36 @@ export async function addRecipeNotification(recipeId, recipeTitle, author) {
   }])
   if (error) throw error
 }
+
+// ─── User Activity Tracking ───────────────────────────────
+export async function recordUserLogin(fullName) {
+  const { error } = await supabase.from('user_activity').upsert([{
+    user_name: fullName,
+    last_seen: new Date().toISOString(),
+  }], { onConflict: 'user_name' })
+  if (error) console.error('Activity tracking error:', error)
+}
+
+export async function getUserActivity() {
+  const { data, error } = await supabase
+    .from('user_activity')
+    .select('*')
+    .order('last_seen', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+export async function getAdminStats() {
+  const [recipes, comments, notifs, users] = await Promise.all([
+    supabase.from('recipes').select('id, title, category, created_by, created_at'),
+    supabase.from('comments').select('id, author, created_at, recipe_id'),
+    supabase.from('notifications').select('id', { count: 'exact' }),
+    supabase.from('user_activity').select('*').order('last_seen', { ascending: false })
+  ])
+  return {
+    recipes: recipes.data || [],
+    comments: comments.data || [],
+    users: users.data || [],
+    notifCount: notifs.count || 0
+  }
+}

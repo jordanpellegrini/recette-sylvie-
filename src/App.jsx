@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import LoginPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
 import RecipesPage from './pages/RecipesPage'
+import AdminPage from './pages/AdminPage'
 import WelcomePopup from './components/WelcomePopup'
 import NotificationsPanel from './components/NotificationsPanel'
-import { getNotifications } from './lib/supabase'
+import { getNotifications, recordUserLogin } from './lib/supabase'
 import { supabase } from './lib/supabase'
 import './App.css'
 
@@ -20,8 +21,9 @@ export default function App() {
   const [notifications, setNotifications] = useState([])
 
   useEffect(() => {
-    if (user) {
+    if (user && !user.isAdmin) {
       loadNotifications()
+      recordUserLogin(user.fullName)
       const channel = supabase
         .channel('notifications')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => {
@@ -38,11 +40,11 @@ export default function App() {
     catch (e) { console.error(e) }
   }
 
-  function handleLogin({ prenom, nom, fullName }) {
-    const u = { prenom, nom, fullName }
+  function handleLogin({ prenom, nom, fullName, isAdmin }) {
+    const u = { prenom, nom, fullName, isAdmin }
     localStorage.setItem(USER_KEY, JSON.stringify(u))
     setUser(u)
-    setShowWelcome(true)
+    if (!isAdmin) setShowWelcome(true)
   }
 
   function handleLogout() {
@@ -53,6 +55,9 @@ export default function App() {
   }
 
   if (!user) return <LoginPage onLogin={handleLogin} />
+
+  // Page Admin — complètement séparée
+  if (user.isAdmin) return <AdminPage onLogout={handleLogout} />
 
   return (
     <div className="app">
