@@ -51,7 +51,9 @@ export default function ImportModal({ onClose, onImported, user }) {
     setLoading(true)
     try {
       await addRecipe({ ...recipe, created_by: user.fullName })
-      setStep(3); onImported()
+      setStep(3)
+      // On passe la catégorie détectée par Claude pour rediriger automatiquement
+      setTimeout(() => onImported(recipe.category), 1500)
     } catch (e) { setError(e.message) }
     finally { setLoading(false) }
   }
@@ -152,13 +154,17 @@ export default function ImportModal({ onClose, onImported, user }) {
           </>
         )}
 
-        {step === 3 && (
+        {step === 3 && recipe && (
           <div className="success-screen">
             <div className="success-icon">🎉</div>
             <h2>Recette ajoutée !</h2>
-            <button className="btn-primary" onClick={onClose}>Fermer</button>
+            <p>
+              Redirection vers les recettes{' '}
+              <strong>{recipe.category === 'sucree' ? '🍰 sucrées' : '🧂 salées'}</strong>...
+            </p>
           </div>
         )}
+
       </div>
     </div>
   )

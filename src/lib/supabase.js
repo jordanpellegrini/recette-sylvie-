@@ -64,6 +64,16 @@ export async function addNotification(recipeId, recipeTitle, commentAuthor, comm
   if (error) throw error
 }
 
+export async function addRecipeNotification(recipeId, recipeTitle, author) {
+  const { error } = await supabase.from('notifications').insert([{
+    recipe_id: recipeId,
+    recipe_title: recipeTitle,
+    comment_author: author,
+    comment_preview: `✨ A ajouté la recette "${recipeTitle}"`
+  }])
+  if (error) throw error
+}
+
 export async function markAllNotificationsRead() {
   const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false)
   if (error) throw error

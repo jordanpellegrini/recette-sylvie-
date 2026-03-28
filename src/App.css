@@ -105,6 +105,28 @@ body {
   font-style: italic;
 }
 
+.home-import {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.btn-import-home {
+  background: linear-gradient(135deg, var(--brown) 0%, var(--brown-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 0.85rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(91,52,30,0.3);
+}
+
+.btn-import-home:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(91,52,30,0.4); }
+
 /* ── Home Page ──────────────────────────────────────────── */
 .home-page {
   min-height: 100vh;
@@ -130,8 +152,24 @@ body {
   color: var(--text-light);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.6rem;
 }
+
+.btn-logout {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  transition: all 0.2s;
+}
+
+.btn-logout:hover { border-color: var(--red); color: var(--red); background: #fdf0ee; }
+
+
 
 .home-hero { text-align: center; padding: 1rem 0; }
 
@@ -1149,3 +1187,125 @@ body {
   .modal-actions button { width: 100%; }
   .notif-panel { max-width: 100%; }
 }
+
+/* ── Manual Recipe Form ─────────────────────────────────── */
+.btn-manual-home {
+  background: white;
+  color: var(--brown);
+  border: 2px solid var(--brown-light);
+  border-radius: 50px;
+  padding: 0.85rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-manual-home:hover { background: var(--cream-dark); transform: translateY(-2px); }
+
+.home-import {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.modal-box-large { max-width: 680px; }
+
+.category-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.category-btn {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-light);
+}
+
+.category-btn.active.sucree { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.category-btn.active.salee { background: var(--green-light); border-color: var(--green); color: var(--green); }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0;
+}
+
+@media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+
+.dynamic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.dynamic-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.dynamic-row .field-input,
+.dynamic-row .field-textarea { margin-top: 0; flex: 1; }
+
+.step-num-label {
+  background: var(--brown);
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+}
+
+.step-textarea { resize: vertical; }
+
+.dynamic-remove {
+  background: none;
+  border: 1.5px solid #e0d0c8;
+  border-radius: 6px;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  margin-top: 0.75rem;
+  flex-shrink: 0;
+}
+
+.dynamic-remove:hover { border-color: var(--red); color: var(--red); background: #fdf0ee; }
+
+.dynamic-add {
+  background: none;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  color: var(--brown-light);
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.dynamic-add:hover { border-color: var(--brown-light); background: var(--cream); color: var(--brown); }

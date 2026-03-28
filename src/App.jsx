@@ -14,16 +14,14 @@ export default function App() {
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem(USER_KEY)) } catch { return null }
   })
-  const [page, setPage] = useState('home') // 'home' | 'sucree' | 'salee'
+  const [page, setPage] = useState('home')
   const [showWelcome, setShowWelcome] = useState(false)
   const [showNotifs, setShowNotifs] = useState(false)
   const [notifications, setNotifications] = useState([])
-  const [isNewUser, setIsNewUser] = useState(false)
 
   useEffect(() => {
     if (user) {
       loadNotifications()
-      // Realtime notifications
       const channel = supabase
         .channel('notifications')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => {
@@ -43,8 +41,14 @@ export default function App() {
     const u = { prenom, nom, fullName }
     localStorage.setItem(USER_KEY, JSON.stringify(u))
     setUser(u)
-    setIsNewUser(true)
     setShowWelcome(true)
+  }
+
+  function handleLogout() {
+    localStorage.removeItem(USER_KEY)
+    setUser(null)
+    setPage('home')
+    setNotifications([])
   }
 
   if (!user) return <LoginPage onLogin={handleLogin} />
@@ -69,6 +73,7 @@ export default function App() {
           onNavigate={cat => setPage(cat)}
           notifications={notifications}
           onOpenNotifications={() => setShowNotifs(true)}
+          onLogout={handleLogout}
         />
       )}
 
