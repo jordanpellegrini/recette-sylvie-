@@ -1639,3 +1639,23 @@ body {
   .recipes-toolbar { max-width: 900px; padding: 1.25rem 2rem; }
   .recipes-container { max-width: 900px; padding: 1rem 2rem 4rem; }
 }
+
+/* ── Login suggestion ───────────────────────────────────── */
+.login-suggestion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  background: var(--green-light);
+  border: 2px solid var(--green);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.login-suggestion:hover { background: #c8e6c0; }
+.login-suggestion span { font-size: 0.82rem; color: var(--green); }
+.login-suggestion strong { font-size: 1.1rem; color: var(--brown-dark); }
+.suggestion-tap { font-size: 0.72rem; color: var(--text-light); font-style: italic; }
