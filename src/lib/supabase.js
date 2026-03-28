@@ -47,11 +47,54 @@ export async function deleteComment(id) {
 }
 
 // ─── Notifications ────────────────────────────────────────
-export async function getNotifications() {
-  const { data, error } = await supabase
-    .from('notifications').select('*').order('created_at', { ascending: false }).limit(20)
+// notification_reads stocke : notification_id + user_name + dismissed (bool)
+
+export async function getNotifications(userName) {
+  const { data: notifs, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(30)
   if (error) throw error
-  return data || []
+  if (!notifs || notifs.length === 0) return []
+
+  const { data: reads } = await supabase
+    .from('notification_reads')
+    .select('notification_id, dismissed')
+    .eq('user_name', userName)
+
+  const readsMap = {}
+  ;(reads || []).forEach(r => { readsMap[r.notification_id] = r })
+
+  // Filtre les notifications supprimées par cet utilisateur
+  return notifs
+    .filter(n => !readsMap[n.id]?.dismissed)
+    .map(n => ({ ...n, read: !!readsMap[n.id] }))
+}
+
+export async function markAllNotificationsRead(userName) {
+  const { data: notifs } = await supabase.from('notifications').select('id')
+  const { data: reads } = await supabase
+    .from('notification_reads').select('notification_id').eq('user_name', userName)
+
+  const readIds = new Set((reads || []).map(r => r.notification_id))
+  const toMark = (notifs || []).filter(n => !readIds.has(n.id))
+  if (toMark.length === 0) return
+
+  const { error } = await supabase.from('notification_reads').insert(
+    toMark.map(n => ({ notification_id: n.id, user_name: userName, dismissed: false }))
+  )
+  if (error) throw error
+}
+
+export async function dismissNotification(notificationId, userName) {
+  // Upsert : marque comme lu ET supprimé pour cet utilisateur uniquement
+  const { error } = await supabase.from('notification_reads').upsert([{
+    notification_id: notificationId,
+    user_name: userName,
+    dismissed: true
+  }], { onConflict: 'notification_id,user_name' })
+  if (error) throw error
 }
 
 export async function addNotification(recipeId, recipeTitle, commentAuthor, commentPreview) {
@@ -71,15 +114,5 @@ export async function addRecipeNotification(recipeId, recipeTitle, author) {
     comment_author: author,
     comment_preview: `✨ A ajouté la recette "${recipeTitle}"`
   }])
-  if (error) throw error
-}
-
-export async function markAllNotificationsRead() {
-  const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false)
-  if (error) throw error
-}
-
-export async function clearNotifications() {
-  const { error } = await supabase.from('notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000')
   if (error) throw error
 }

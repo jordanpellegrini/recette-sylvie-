@@ -1309,3 +1309,45 @@ body {
 }
 
 .dynamic-add:hover { border-color: var(--brown-light); background: var(--cream); color: var(--brown); }
+
+/* ── Notification per-user dismiss ─────────────────────── */
+.notif-badge-inline {
+  background: var(--red);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  margin-left: 0.5rem;
+}
+
+.notif-item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  display: block;
+}
+
+.notif-dismiss {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: 4px;
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.notif-dismiss:hover { color: var(--red); background: #fdf0ee; }

@@ -33,7 +33,8 @@ export default function App() {
   }, [user])
 
   async function loadNotifications() {
-    try { setNotifications(await getNotifications()) }
+    if (!user) return
+    try { setNotifications(await getNotifications(user.fullName)) }
     catch (e) { console.error(e) }
   }
 
@@ -64,6 +65,7 @@ export default function App() {
           notifications={notifications}
           onClose={() => setShowNotifs(false)}
           onRefresh={loadNotifications}
+          user={user}
         />
       )}
 
