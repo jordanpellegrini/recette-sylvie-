@@ -109,8 +109,9 @@ export default function ImportModal({ onClose, onImported, user }) {
   }
 
   async function handleImport() {
-    if (mode === 'image' && images.length === 0) { setError('Ajoutez au moins une photo.'); return }
-    if (mode === 'text' && !rawText.trim()) { setError('Collez la description.'); return }
+    if (mode === 'image' && images.length === 0) { setError(lang === 'fr' ? 'Ajoutez au moins une photo.' : 'Add at least one photo.'); return }
+    if (mode === 'video' && videoFrames.length === 0) { setError(lang === 'fr' ? 'Extrayez d\'abord les images de la vidéo.' : 'Extract frames from the video first.'); return }
+    if (mode === 'text' && !rawText.trim()) { setError(lang === 'fr' ? 'Collez la description.' : 'Paste the description.'); return }
     setError(''); setLoading(true)
     try {
       const extracted = mode === 'image'
@@ -157,6 +158,7 @@ export default function ImportModal({ onClose, onImported, user }) {
 
             <div className="mode-switcher">
               <button className={`mode-btn ${mode === 'image' ? 'active' : ''}`} onClick={() => setMode('image')}>{t('photos_tab', lang)}</button>
+              <button className={`mode-btn ${mode === 'video' ? 'active' : ''}`} onClick={() => setMode('video')}>🎥 {lang === 'fr' ? 'Vidéo' : 'Video'}</button>
               <button className={`mode-btn ${mode === 'text' ? 'active' : ''}`} onClick={() => setMode('text')}>{t('text_tab', lang)}</button>
             </div>
 
@@ -197,6 +199,47 @@ export default function ImportModal({ onClose, onImported, user }) {
                   </div>
                 )}
               </>
+            )}
+
+            {mode === 'video' && (
+              <div className="video-upload-section">
+                {!video ? (
+                  <div className="video-drop-zone" onClick={() => videoInputRef.current.click()}>
+                    <span className="video-drop-icon">🎥</span>
+                    <p>{lang === 'fr' ? 'Cliquez pour choisir une vidéo' : 'Click to choose a video'}</p>
+                    <p className="video-drop-hint">MP4, MOV, AVI</p>
+                  </div>
+                ) : (
+                  <div className="video-preview-section">
+                    <video src={video.url} className="video-preview" controls />
+                    <div className="video-info">
+                      <span className="video-filename">{video.file.name}</span>
+                      <button className="btn-video-change" onClick={() => { setVideo(null); setVideoFrames([]) }}>
+                        🔄 {lang === 'fr' ? 'Changer' : 'Change'}
+                      </button>
+                    </div>
+                    {videoFrames.length === 0 ? (
+                      <button className="btn-extract-frames" onClick={extractFrames} disabled={extractingFrames}>
+                        {extractingFrames
+                          ? `⏳ ${lang === 'fr' ? 'Extraction' : 'Extracting'}... ${extractProgress}%`
+                          : `🎞 ${lang === 'fr' ? 'Extraire les images' : 'Extract frames'}`
+                        }
+                      </button>
+                    ) : (
+                      <div className="frames-preview">
+                        <p className="frames-count">✅ {videoFrames.length} {lang === 'fr' ? 'images extraites — prêt !' : 'frames extracted — ready!'}</p>
+                        <div className="frames-grid">
+                          {videoFrames.map((f, i) => <img key={i} src={f.preview} alt={`frame ${i+1}`} className="frame-thumb" />)}
+                        </div>
+                        <button className="btn-extract-frames secondary" onClick={extractFrames} disabled={extractingFrames}>
+                          🔄 {lang === 'fr' ? 'Ré-extraire' : 'Re-extract'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleVideoUpload} />
+              </div>
             )}
 
             {mode === 'text' && (
