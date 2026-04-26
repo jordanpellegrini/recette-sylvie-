@@ -21,6 +21,15 @@ export default function ImportModal({ onClose, onImported, user }) {
   const [headerPhoto, setHeaderPhoto] = useState(null) // { preview, file }
   const headerPhotoRef = useRef(null)
 
+  // Video
+  const [video, setVideo] = useState(null) // { file, url }
+  const [videoFrames, setVideoFrames] = useState([]) // extracted frames
+  const [extractingFrames, setExtractingFrames] = useState(false)
+  const [extractProgress, setExtractProgress] = useState(0)
+  const videoRef = useRef(null)
+  const videoInputRef = useRef(null)
+  const canvasRef = useRef(null)
+
   // Instagram images
   const fileInputRef = useRef(null)
 
@@ -40,6 +49,63 @@ export default function ImportModal({ onClose, onImported, user }) {
     const reader = new FileReader()
     reader.onload = ev => setHeaderPhoto({ preview: ev.target.result, file })
     reader.readAsDataURL(file)
+  }
+
+  async function handleVideoUpload(e) {
+    const file = e.target.files[0]
+    if (!file || !file.type.startsWith('video/')) return
+    const url = URL.createObjectURL(file)
+    setVideo({ file, url })
+    setVideoFrames([])
+  }
+
+  async function extractFrames() {
+    if (!video) return
+    setExtractingFrames(true)
+    setExtractProgress(0)
+
+    try {
+      const vid = document.createElement('video')
+      vid.src = video.url
+      vid.muted = true
+      vid.preload = 'metadata'
+
+      await new Promise((res, rej) => {
+        vid.onloadedmetadata = res
+        vid.onerror = rej
+        setTimeout(rej, 10000)
+      })
+
+      const duration = vid.duration
+      const frameCount = Math.min(18, Math.max(8, Math.floor(duration / 6)))
+      const frames = []
+      const canvas = document.createElement('canvas')
+      canvas.width = 640
+      canvas.height = 360
+      const ctx = canvas.getContext('2d')
+
+      for (let i = 0; i < frameCount; i++) {
+        const time = (duration / (frameCount - 1)) * i
+        vid.currentTime = time
+
+        await new Promise(res => {
+          vid.onseeked = res
+          setTimeout(res, 1000)
+        })
+
+        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
+        const base64 = dataUrl.split(',')[1]
+        frames.push({ preview: dataUrl, base64 })
+        setExtractProgress(Math.round(((i + 1) / frameCount) * 100))
+      }
+
+      setVideoFrames(frames)
+    } catch (e) {
+      setError(lang === 'fr' ? 'Erreur extraction vidéo : ' + e.message : 'Video extraction error: ' + e.message)
+    } finally {
+      setExtractingFrames(false)
+    }
   }
 
   async function handleImport() {
@@ -143,7 +209,7 @@ export default function ImportModal({ onClose, onImported, user }) {
             {error && <p className="field-error">{error}</p>}
             <div className="modal-actions">
               <button className="btn-secondary" onClick={onClose}>{t('cancel', lang)}</button>
-              <button className="btn-primary" onClick={handleImport} disabled={loading}>
+              <button className="btn-primary" onClick={handleImport} disabled={loading || (mode === 'video' && videoFrames.length === 0)}>
                 {loading ? t('importing', lang) : t('import_btn', lang)}
               </button>
             </div>
