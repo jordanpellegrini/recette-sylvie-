@@ -33,14 +33,38 @@ export default function ImportModal({ onClose, onImported, user }) {
   // Instagram images
   const fileInputRef = useRef(null)
 
+  function compressImage(file, maxSize = 1024) {
+    return new Promise(res => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let w = img.width, h = img.height
+        if (w > maxSize || h > maxSize) {
+          if (w > h) { h = Math.round(h * maxSize / w); w = maxSize }
+          else { w = Math.round(w * maxSize / h); h = maxSize }
+        }
+        canvas.width = w; canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.75)
+        URL.revokeObjectURL(url)
+        res({ preview: dataUrl, base64: dataUrl.split(',')[1], mediaType: 'image/jpeg' })
+      }
+      img.onerror = () => {
+        // Fallback sans compression
+        const reader = new FileReader()
+        reader.onload = ev => { const d = ev.target.result; res({ preview: d, base64: d.split(',')[1], mediaType: file.type }) }
+        reader.readAsDataURL(file)
+      }
+      img.src = url
+    })
+  }
+
   function processFiles(files) {
     const remaining = 10 - images.length
-    Array.from(files).slice(0, remaining).forEach(file => {
-      if (!file.type.startsWith('image/')) return
-      const reader = new FileReader()
-      reader.onload = ev => { const d = ev.target.result; setImages(prev => [...prev, { preview: d, base64: d.split(',')[1], mediaType: file.type }]) }
-      reader.readAsDataURL(file)
-    })
+    const toProcess = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, remaining)
+    Promise.all(toProcess.map(f => compressImage(f)))
+      .then(compressed => setImages(prev => [...prev, ...compressed].slice(0, 10)))
   }
 
   function handleHeaderPhoto(e) {
