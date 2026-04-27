@@ -72,7 +72,7 @@ export default function RecipeCard({ recipe, onDeleted, user, onPhotoUpdated }) 
   const [myReactions, setMyReactions] = useState([])
 
   const photoInputRef = useRef(null)
-  const isOwner = !recipe.created_by || normalize(recipe.created_by) === normalize(user.fullName)
+  const isOwner = !recipe.created_by || normalize(recipe.created_by) === normalize(user.fullName) || normalize(recipe.created_by) === normalize(user.username || '')
 
   useEffect(() => {
     if (!expanded) return
