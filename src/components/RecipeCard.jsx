@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import CookingMode from './CookingMode'
+import EditRecipeModal from './EditRecipeModal'
 import NutritionPanel from './NutritionPanel'
 import { useTheme } from '../lib/ThemeContext'
 import { t } from '../lib/i18n'
@@ -48,6 +49,8 @@ export default function RecipeCard({ recipe, onDeleted, user, onPhotoUpdated }) 
   const { lang } = useTheme()
   const [expanded, setExpanded] = useState(false)
   const [cookingMode, setCookingMode] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+  const [localRecipe, setLocalRecipe] = useState(recipe)
   const [showComments, setShowComments] = useState(false)
   const [comments, setComments] = useState([])
   const [newComment, setNewComment] = useState('')
@@ -103,10 +106,10 @@ export default function RecipeCard({ recipe, onDeleted, user, onPhotoUpdated }) 
   // Obtenir le contenu traduit (original ou traduit)
   function getContent() {
     if (!translation) return {
-      title: recipe.title,
-      ingredients: recipe.ingredients,
-      steps: recipe.steps,
-      tips: recipe.tips
+      title: localRecipe.title,
+      ingredients: localRecipe.ingredients,
+      steps: localRecipe.steps,
+      tips: localRecipe.tips
     }
     return {
       title: translation.title || recipe.title,
@@ -487,10 +490,16 @@ Tips: ${recipe.tips || 'none'}`
           <div className="card-footer">
             <button className="btn-cooking" onClick={() => setCookingMode(true)}>{t('cooking_mode', lang)}</button>
             <button className="btn-print" onClick={handlePrint}>{t('print', lang)}</button>
+            {isOwner && <button className="btn-edit-recipe" onClick={() => setEditMode(true)}>✏️</button>}
             {isOwner && <button className="btn-delete" onClick={handleDelete} disabled={deleting}>{deleting ? t('deleting', lang) : '🗑'}</button>}
           </div>
         </div>
       )}
+      {editMode && <EditRecipeModal 
+        recipe={localRecipe} 
+        onClose={() => setEditMode(false)} 
+        onSaved={updated => { setLocalRecipe(updated); setEditMode(false) }}
+      />}
       {cookingMode && <CookingMode 
         recipe={{
           ...recipe,

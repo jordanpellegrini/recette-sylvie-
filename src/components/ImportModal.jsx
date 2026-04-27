@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { extractRecipeFromImages, extractRecipeFromText } from '../lib/claude'
+import { extractRecipeFromImages, extractRecipeFromText, detectTags } from '../lib/claude'
 import { addRecipe, addNotification, uploadRecipePhoto, updateRecipePhoto } from '../lib/supabase'
 import { addPoints } from '../lib/auth'
 import { CATEGORIES } from '../lib/constants'

@@ -2118,3 +2118,18 @@ html, body {
     display: inline-block;
   }
 }
+
+/* ── Edit recipe button ──────────────────────────────────── */
+.btn-edit-recipe {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--brown-light);
+  cursor: pointer;
+  font-size: .9rem;
+  padding: .45rem .75rem;
+  transition: all .2s;
+  font-family: 'Lato', sans-serif;
+  min-height: var(--touch-min);
+}
+.btn-edit-recipe:hover { border-color: var(--brown); color: var(--brown); background: var(--cream-dark); }

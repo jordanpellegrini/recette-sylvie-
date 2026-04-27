@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { addRecipe, addNotification, uploadRecipePhoto, updateRecipePhoto } from '../lib/supabase'
+import { detectTags } from '../lib/claude'
 import { addPoints } from '../lib/auth'
 import { CATEGORIES } from '../lib/constants'
 import { useTheme } from '../lib/ThemeContext'
@@ -44,6 +45,8 @@ export default function ManualRecipeModal({ onClose, onSaved, user }) {
     if (cleanSteps.length === 0) { setError(lang === 'fr' ? 'Ajoutez au moins une étape.' : 'Add at least one step.'); return }
     setError(''); setLoading(true)
     try {
+      // Détection automatique des tags
+      const autoTags = await detectTags(cleanIngredients, cleanSteps, tips)
       const saved = await addRecipe({
         title: title.trim(), category,
         servings: servings.trim() || null,
@@ -52,6 +55,7 @@ export default function ManualRecipeModal({ onClose, onSaved, user }) {
         ingredients: cleanIngredients,
         steps: cleanSteps,
         tips: tips.trim() || null,
+        tags: autoTags,
         created_by: user.fullName
       })
       if (headerPhoto?.file) {
