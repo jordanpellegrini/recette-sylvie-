@@ -32,3 +32,36 @@ export async function extractRecipeFromText({ instagramUrl, rawText }) {
   const prompt = `Tu es un assistant culinaire. Extrait la recette de ce texte. Détermine la catégorie parmi: entree, plat, dessert, boisson, apero. Réponds UNIQUEMENT en JSON valide sans backticks:\n${FORMAT}\n\nTexte:\n"""\n${rawText}\n"""`
   return callClaude([{ role: 'user', content: prompt }])
 }
+
+export async function detectTags(ingredients, steps, tips) {
+  try {
+    const response = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 150,
+        messages: [{
+          role: 'user',
+          content: `Analyze this recipe and return ONLY a JSON array of applicable tags from: ["vegetarien","vegan","sans_gluten","rapide","economique","fait_maison"]. No explanation, just the array.
+
+Rules: vegetarien=no meat/fish, vegan=no animal products, sans_gluten=no wheat/flour/pasta, rapide=under 30min, economique=cheap ingredients, fait_maison=from scratch.
+
+Ingredients: ${JSON.stringify(ingredients)}
+Steps: ${JSON.stringify(steps)}
+Tips: ${tips || ''}
+
+Return ONLY the JSON array.`
+        }]
+      })
+    })
+    const data = await response.json()
+    const text = data.content.map(b => b.text || '').join('').trim()
+    const clean = text.replace(/```json/gi, '').replace(/```/g, '').trim()
+    const result = JSON.parse(clean)
+    return Array.isArray(result) ? result : []
+  } catch (e) {
+    console.error('Tag detection error:', e)
+    return []
+  }
+}
